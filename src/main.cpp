@@ -165,19 +165,19 @@ int main() {
 
     // load models
     // -----------
-    Model ourModel("resources/objects/backpack/backpack.obj");
+    Model ourModel("resources/objects/meteor/Iron_Meteorite_30k.obj");
     ourModel.SetShaderTextureNamePrefix("material.");
+
 
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
     pointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
-    pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
+    pointLight.diffuse = glm::vec3(1.0, 1.0, 1.0);
     pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
     pointLight.constant = 1.0f;
-    pointLight.linear = 0.09f;
-    pointLight.quadratic = 0.032f;
-
+    pointLight.linear = 0.0f;
+    pointLight.quadratic = 0.0f;
 
 
     // draw in wireframe
@@ -222,13 +222,23 @@ int main() {
         ourShader.setMat4("view", view);
 
         // render the loaded model
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::translate(model,
-                               programState->backpackPosition); // translate it down so it's at the center of the scene
-        model = glm::scale(model, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
+        glm::mat4 model= glm::mat4(1.0f);
+
+        model = glm::translate(model,glm::vec3(3.0f,0.0f,0.0f));
+        model = glm::scale(model, glm::vec3(0.3f));
+        model = glm::rotate(model,glm::radians(40.0f), glm::vec3(1.0f ,0.0f, 0.0f));
+
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
 
+     /*  glm::mat4 model2 = glm::mat4(1.0f);
+        model2 = glm::translate(model2,
+                                glm::vec3(50,-100,10)); // translate it down so it's at the center of the scene
+       // model2 = glm::rotate(model2, (float)glfwGetTime()/2, glm::vec3(-1,1,1));
+        model2 = glm::scale(model2, glm::vec3(programState->backpackScale));    // it's a bit too big for our scene, so scale it down
+        ourShader.setMat4("model2", model2);
+        drugi.Draw(ourShader);
+*/
         if (programState->ImGuiEnabled)
             DrawImGui(programState);
 
