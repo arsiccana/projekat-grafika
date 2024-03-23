@@ -304,10 +304,10 @@ int main() {
 
         // render the loaded model
         glm::mat4 model= glm::mat4(1.0f);
-
+        model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(-1,1,1));
         model = glm::translate(model,glm::vec3(3.0f,0.0f,0.0f));
-        model = glm::scale(model, glm::vec3(0.3f));
-        model = glm::rotate(model,glm::radians(40.0f), glm::vec3(1.0f ,0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(0.5));
+        //model = glm::rotate(model,glm::radians(40.0f), glm::vec3(1.0f ,0.0f, 0.0f));
 
         ourShader.setMat4("model", model);
         ourModel.Draw(ourShader);
@@ -408,7 +408,7 @@ void DrawImGui(ProgramState *programState) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-
+/*
     {
         static float f = 0.0f;
         ImGui::Begin("Hello window");
@@ -433,7 +433,7 @@ void DrawImGui(ProgramState *programState) {
         ImGui::Checkbox("Camera mouse update", &programState->CameraMouseMovementUpdateEnabled);
         ImGui::End();
     }
-
+*/
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
