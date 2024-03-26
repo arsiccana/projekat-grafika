@@ -1,4 +1,4 @@
-#Projekat
+# Projekat
 Projekat iz Racunarske grafike
 # Uputstvo
 1. `git clone git@github.com:arsiccana/projekat-grafika.git`
@@ -6,7 +6,7 @@ Projekat iz Racunarske grafike
 3. Main se nalazi u src/main.cpp
 4. Cpp fajlovi idu u src folder
 7. ALT+SHIFT+F10 -> pokretanje projekta
-#Kontrole
+# Kontrole
 - ```w``` kamera unapred
 - ```s``` kamera unazad
 - ```a``` kamera ulevo
@@ -15,8 +15,8 @@ Projekat iz Racunarske grafike
 - ```down``` - exposure--
 - ```b``` bloom
 - ```esc``` izlaz
-#Oblasti grupe A:
+# Oblasti grupe A:
 -Cubemaps
-#Oblasti grupe B:
+# Oblasti grupe B:
 -HDR,Bloom
 
