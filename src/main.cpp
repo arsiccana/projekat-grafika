@@ -33,8 +33,9 @@ void renderQuad();
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-bool bloom= true;
+bool bloom= false;
 float exposure= 1.0f;
+
 // camera
 
 float lastX = SCR_WIDTH / 2.0f;
@@ -176,8 +177,19 @@ int main() {
 
     // load models
     // -----------
-    Model ourModel("resources/objects/meteor/Iron_Meteorite_30k.obj");
-    ourModel.SetShaderTextureNamePrefix("material.");
+    Model meteorModel("resources/objects/meteor/Iron_Meteorite_30k.obj");
+    meteorModel.SetShaderTextureNamePrefix("material.");
+
+
+    Model moonModel("resources/objects/moon/NASA CGI Moon Kit.obj");
+    moonModel.SetShaderTextureNamePrefix("material.");
+
+
+    Model astroModel("resources/objects/astro/Astronauta.obj");
+    astroModel.SetShaderTextureNamePrefix("material.");
+
+    Model craftModel("resources/objects/spacecraft/spaceship_with_station_cabin.obj");
+    craftModel.SetShaderTextureNamePrefix("material.");
 
 
     unsigned int hdrFBO;
@@ -388,6 +400,66 @@ int main() {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
+
+        // render the loaded model
+        //draw meteor
+
+        glm::mat4 model;
+
+        model = glm::mat4(1.0f);
+        model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(1,10,0));
+        model = glm::translate(model,glm::vec3(4.75f,(-0.93f+ sin(glfwGetTime())/6),-8.5f));
+        model = glm::scale(model, glm::vec3 (0.3f));
+        ourShader.setMat4("model", model);
+        meteorModel.Draw(ourShader);
+
+
+        //draw 2nd
+        model = glm::mat4(1.0f);
+        model = glm::rotate( model, (float)glfwGetTime()/4, glm::vec3(1,0,-2));
+        model = glm::translate(model,glm::vec3(-20.5f,(-0.82f+ sin(glfwGetTime())/6),11.0f));
+        model = glm::scale(model, glm::vec3(0.6f,0.4f,0.5f));
+
+        ourShader.setMat4("model", model);
+        meteorModel.Draw(ourShader);
+
+
+
+        //draw 3rd
+        model = glm::mat4(1.0f);
+        model = glm::rotate( model, (float)glfwGetTime()/6, glm::vec3(5,-1,-2));
+        model = glm::translate(model,glm::vec3(40.5f,-5,-5.0f));
+        model = glm::scale(model, glm::vec3(0.3));
+
+        ourShader.setMat4("model", model);
+        meteorModel.Draw(ourShader);
+
+
+
+        //draw moon
+        glm::mat4 model2 = glm::mat4(1.0f);
+        model2 = glm::translate(model2,glm::vec3(21.75f,-0.7f, -4.65f));
+        model2 = glm::scale(model2, glm::vec3(0.6));
+        model2 = glm::rotate(model2, glm::radians((float) -90.0), glm::vec3(1.0f, 0.0f, 0.0f));
+        model2 = glm::rotate(model2, glm::radians((float) 110.0), glm::vec3(0.0f, 0.0f, 1.0f));
+        ourShader.setMat4("model", model2);
+        moonModel.Draw(ourShader);
+
+        //draw spacecraft
+        glm::mat4 model4 = glm::mat4(1.0f);
+        model4 = glm::translate(model4,glm::vec3(1.45f, 15.6f, -9.0f));
+        model4 = glm::scale(model4, glm::vec3(0.5f));
+        model4 =glm::rotate(model4,glm::radians(10.8f), glm::vec3(1.0f ,0.0f, 0.0f));
+        model4 =glm::rotate(model4,glm::radians(140.8f), glm::vec3(0.0f ,1.0f, 0.0f));
+         model4 =glm::rotate(model4,glm::radians(-35.0f), glm::vec3(0.0f ,0.0f, -1.0f));
+
+        ourShader.setMat4("model", model4);
+        craftModel.Draw(ourShader);
+
+        //i want to put something transparently into space
+
+
         blendShader.use();
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         blendShader.setVec3("pointLight.position", pointLight.position);
@@ -407,15 +479,16 @@ int main() {
         blendShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
         blendShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
         blendShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
-        // render the loaded model
-        glm::mat4 model= glm::mat4(1.0f);
-        model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(-1,1,1));
-        model = glm::translate(model,glm::vec3(3.0f,0.0f,0.0f));
-        model = glm::scale(model, glm::vec3(0.5));
-        //model = glm::rotate(model,glm::radians(40.0f), glm::vec3(1.0f ,0.0f, 0.0f));
+        //draw astro
 
-        ourShader.setMat4("model", model);
-        ourModel.Draw(ourShader);
+        glm::mat4 model3 = glm::mat4(1.0f);
+        model3 = glm::translate(model3,glm::vec3(21.45f, 5.6f, -9.0f));
+        model3 = glm::scale(model3, glm::vec3(1.5f));
+        model3 = glm::rotate(model3,glm::radians(25.8f), glm::vec3(1.0f ,0.0f, 0.0f));
+        blendShader.setMat4("model", model3);
+        astroModel.Draw(ourShader);
+
+
 
 
         if (programState->ImGuiEnabled)
@@ -587,7 +660,7 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 
-        if (exposure <= 0.9)
+        if (exposure <=0.9)
             exposure += 0.1;
     }
 }
