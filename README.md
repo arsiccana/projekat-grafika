@@ -14,6 +14,7 @@ Projekat iz Racunarske grafike
 - ```up``` - exposure++
 - ```down``` - exposure--
 - ```b``` bloom
+- ```m``` blinn
 - ```esc``` izlaz
 # Oblasti grupe A:
 -Cubemaps
