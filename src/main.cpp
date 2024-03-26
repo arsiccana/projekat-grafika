@@ -32,9 +32,9 @@ void renderQuad();
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-
 bool bloom= false;
 float exposure= 1.0f;
+bool blinn = true;
 
 // camera
 
@@ -66,9 +66,9 @@ struct ProgramState {
     float backpackScale = 1.0f;
     PointLight pointLight;
     ProgramState()
-            : camera(glm::vec3(0.0f, 0.0f, 3.0f)) {}
+            : camera(glm::vec3(0.0f, 0.0f, 0.0f)) {}
     glm::vec3 dirLightDir = glm::vec3(3.8f, 5.4f, -2.2f);
-    glm::vec3 dirLightAmbDiffSpec = glm::vec3(0.3f, 0.3f,0.2f);
+    glm::vec3 dirLightAmbDiffSpec = glm::vec3(0.3f, 0.3f,0.3f);
 
     void SaveToFile(std::string filename);
 
@@ -320,16 +320,16 @@ int main() {
 
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
-
+//lights setup
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
-    pointLight.ambient = glm::vec3(0.1, 0.1, 0.1);
-    pointLight.diffuse = glm::vec3(1.0, 1.0, 1.0);
+    pointLight.ambient = glm::vec3(0.9, 0.9, 0.9);
+    pointLight.diffuse = glm::vec3(0.6, 0.6, 0.6);
     pointLight.specular = glm::vec3(1.0, 1.0, 1.0);
 
-    pointLight.constant = 0.5f;
-    pointLight.linear = 0.09f;
-    pointLight.quadratic = 0.032f;
+    pointLight.constant = 0.3f;
+    pointLight.linear = 0.7f;
+    pointLight.quadratic = 0.7f;
 
     ourShader.use();
     ourShader.setInt("diffuseTexture", 0);
@@ -386,6 +386,7 @@ int main() {
         glm::mat4 view = programState->camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
+        ourShader.setInt("blinn", blinn);
         ourShader.setVec3("dirLight.direction", programState->dirLightDir);
         ourShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
         ourShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
@@ -408,6 +409,7 @@ int main() {
         glm::mat4 model;
 
         model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(0.0f,-20.0f,0.0f));
         model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(1,10,0));
         model = glm::translate(model,glm::vec3(4.75f,(-0.93f+ sin(glfwGetTime())/6),-8.5f));
         model = glm::scale(model, glm::vec3 (0.3f));
@@ -428,8 +430,8 @@ int main() {
 
         //draw 3rd
         model = glm::mat4(1.0f);
+        model = glm::translate(model,glm::vec3(40.5f,-7.0,-5.0f));
         model = glm::rotate( model, (float)glfwGetTime()/6, glm::vec3(5,-1,-2));
-        model = glm::translate(model,glm::vec3(40.5f,-5,-5.0f));
         model = glm::scale(model, glm::vec3(0.3));
 
         ourShader.setMat4("model", model);
@@ -439,8 +441,8 @@ int main() {
 
         //draw moon
         glm::mat4 model2 = glm::mat4(1.0f);
-        model2 = glm::translate(model2,glm::vec3(21.75f,-0.7f, -4.65f));
-        model2 = glm::scale(model2, glm::vec3(0.6));
+        model2 = glm::translate(model2,glm::vec3(25.75f,-1.4f, -4.65f));
+        model2 = glm::scale(model2, glm::vec3(1.0f));
         model2 = glm::rotate(model2, glm::radians((float) -90.0), glm::vec3(1.0f, 0.0f, 0.0f));
         model2 = glm::rotate(model2, glm::radians((float) 110.0), glm::vec3(0.0f, 0.0f, 1.0f));
         ourShader.setMat4("model", model2);
@@ -479,20 +481,22 @@ int main() {
         blendShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
         blendShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
         blendShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
-        //draw astro
+        //draw astronaut
 
         glm::mat4 model3 = glm::mat4(1.0f);
-        model3 = glm::translate(model3,glm::vec3(21.45f, 5.6f, -9.0f));
+        static float angle = 0.0f;
+        angle += 0.5f; // rotation speed
+        model3 = glm::translate(model3, glm::vec3(13.0f, 0.0f, 0.0f)); // Translacija udesno za 1.0 jedinicu
+        model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, 1.0f, 1.0f)); // Rotacija oko Y ose
         model3 = glm::scale(model3, glm::vec3(1.5f));
-        model3 = glm::rotate(model3,glm::radians(25.8f), glm::vec3(1.0f ,0.0f, 0.0f));
         blendShader.setMat4("model", model3);
         astroModel.Draw(ourShader);
 
 
 
 
-        if (programState->ImGuiEnabled)
-            DrawImGui(programState);
+//        if (programState->ImGuiEnabled)
+      //      DrawImGui(programState);
 
         //draw skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -663,6 +667,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         if (exposure <=0.9)
             exposure += 0.1;
     }
+    if (key == GLFW_KEY_M && action == GLFW_PRESS)
+        blinn = !blinn;
 }
 unsigned int loadCubemap(vector<std::string> faces)
 {
