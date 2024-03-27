@@ -9,7 +9,7 @@ Projekat iz Racunarske grafike
 # Kontrole
 - ```W``` kamera unapred
 - ```S``` kamera unazad
-- ````A`` kamera ulevo
+- ```A``` kamera ulevo
 - ```D``` kamera udesno
 - ```up``` exposure++
 - ```down``` exposure--
