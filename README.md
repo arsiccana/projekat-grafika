@@ -7,14 +7,16 @@ Projekat iz Racunarske grafike
 4. Cpp fajlovi idu u src folder
 7. ALT+SHIFT+F10 -> pokretanje projekta
 # Kontrole
-- ```w``` kamera unapred
-- ```s``` kamera unazad
-- ```a``` kamera ulevo
-- ```d``` kamera udesno
-- ```up``` - exposure++
-- ```down``` - exposure--
-- ```b``` bloom
-- ```m``` blinn
+- ```W``` kamera unapred
+- ```S``` kamera unazad
+- ````A`` kamera ulevo
+- ```D``` kamera udesno
+- ```up``` exposure++
+- ```down``` exposure--
+- ```H``` hdr
+- ```B``` blinn
+- ```L``` spotlight 
+- ```F``` menjanje boje spotlighta (dok je on)
 - ```esc``` izlaz
 # Oblasti grupe A:
 -Cubemaps

@@ -32,12 +32,12 @@ void renderQuad();
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
-bool bloom= false;
+bool hdr= false;
 float exposure= 1.0f;
-bool blinn = true;
+bool blinn = false;
 bool flashLight = false;
 bool flashLightKeyPressed = false;
-
+bool flashLightColor=false;
 // camera
 
 float lastX = SCR_WIDTH / 2.0f;
@@ -64,11 +64,11 @@ struct ProgramState {
     bool ImGuiEnabled = false;
     Camera camera;
     bool CameraMouseMovementUpdateEnabled = true;
-    glm::vec3 backpackPosition = glm::vec3(0.0f);
-    float backpackScale = 1.0f;
+    glm::vec3 objectPosition = glm::vec3(0.0f);
+    float objectScale = 1.0f;
     PointLight pointLight;
     ProgramState()
-            : camera(glm::vec3(0.0f, 0.0f, 0.0f)) {}
+            : camera(glm::vec3(0.0f, 0.0f, -1.0f)) {}
     glm::vec3 dirLightDir = glm::vec3(3.8f, 5.4f, -2.2f);
     glm::vec3 dirLightAmbDiffSpec = glm::vec3(0.3f, 0.3f,0.3f);
 
@@ -192,6 +192,10 @@ int main() {
 
     Model craftModel("resources/objects/spacecraft/spaceship_with_station_cabin.obj");
     craftModel.SetShaderTextureNamePrefix("material.");
+
+    Model rocketModel("resources/objects/rocket/rocket.obj");
+    rocketModel.SetShaderTextureNamePrefix("material.");
+
 
 
     unsigned int hdrFBO;
@@ -375,6 +379,7 @@ int main() {
         ourShader.setFloat("material.shininess", 16.0f);
         ourShader.setInt("blinn", blinn);
         ourShader.setInt("flashLight", flashLight);
+        ourShader.setInt("flashLightColor", flashLightColor);
 
         //pointlightsetup
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
@@ -393,16 +398,15 @@ int main() {
         ourShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
 
         //spotlightsetup
-        ourShader.setVec3("spotLight.position", programState->camera.Position);
-        ourShader.setVec3("spotLight.direction",programState-> camera.Front);
-        ourShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-        ourShader.setVec3("spotLight.diffuse", 0.7f, 0.7f, 0.7f);
+        ourShader.setVec3("spotLight.ambient", 1.0f,1.0f, 1.0f);
+        ourShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
         ourShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
         ourShader.setFloat("spotLight.constant", 1.0f);
-        ourShader.setFloat("spotLight.linear", 0.05);
-        ourShader.setFloat("spotLight.quadratic", 0.012);
-        ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(10.5f)));
-        ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(13.0f)));
+        ourShader.setFloat("spotLight.linear", 0.09f);
+        ourShader.setFloat("spotLight.quadratic", 0.032f);
+        ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+        ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
@@ -449,8 +453,8 @@ int main() {
 
         //draw 3rd
         model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(40.5f,-7.0,-5.0f));
         model = glm::rotate( model, (float)glfwGetTime()/6, glm::vec3(5,-1,-2));
+        model = glm::translate(model,glm::vec3(40.5f,-7.0,-5.0f));
         model = glm::scale(model, glm::vec3(0.3));
 
         ourShader.setMat4("model", model);
@@ -467,17 +471,44 @@ int main() {
         ourShader.setMat4("model", model2);
         moonModel.Draw(ourShader);
 
+
+
         //draw spacecraft
         glm::mat4 model4 = glm::mat4(1.0f);
-        model4 = glm::translate(model4,glm::vec3(1.45f, 15.6f, -9.0f));
+        model4 = glm::translate(model4,glm::vec3(12.45f, 15.6f, -9.0f));
         model4 = glm::scale(model4, glm::vec3(0.5f));
         model4 =glm::rotate(model4,glm::radians(10.8f), glm::vec3(1.0f ,0.0f, 0.0f));
         model4 =glm::rotate(model4,glm::radians(140.8f), glm::vec3(0.0f ,1.0f, 0.0f));
-         model4 =glm::rotate(model4,glm::radians(-35.0f), glm::vec3(0.0f ,0.0f, -1.0f));
+        model4 =glm::rotate(model4,glm::radians(-35.0f), glm::vec3(0.0f ,0.0f, -1.0f));
 
         ourShader.setMat4("model", model4);
         craftModel.Draw(ourShader);
 
+        float rocketSpeed = 2.0f;   // Speed of movement
+
+        // Update the rocket's position
+        float currentTime = glfwGetTime();
+        float rocketHeight = (currentTime) * rocketSpeed;
+
+        glm::mat4 model5 = glm::mat4(1.0f);
+        model5=glm::translate(model5,glm::vec3(0.0f,-45.0f,0.0f));
+        model5= glm::translate(model5, glm::vec3(0.0f, rocketHeight, 0.0f));
+        model5 = glm::scale(model5, glm::vec3(1.0f));
+        ourShader.setMat4("model", model5);
+        rocketModel.Draw(ourShader);
+
+        glm::vec3 rocketPosition = glm::vec3(model5[3]); //dont need it now
+
+
+
+
+        glm::vec3 moonModelPosition = glm::vec3(model2[3]);
+        glm::vec3 cameraPosition = programState->camera.Position;
+        glm::vec3 direction = moonModelPosition - cameraPosition;
+        direction = glm::normalize(direction);
+
+        ourShader.setVec3("spotLight.position", moonModelPosition+glm::vec3(-4.0f,5.0f,5.0f));
+        ourShader.setVec3("spotLight.direction", direction);
         //i want to put something transparently into space
 
 
@@ -505,12 +536,11 @@ int main() {
         glm::mat4 model3 = glm::mat4(1.0f);
         static float angle = 0.0f;
         angle += 0.5f; // rotation speed
-        model3 = glm::translate(model3, glm::vec3(13.0f, 0.0f, 0.0f)); // Translacija udesno za 1.0 jedinicu
-        model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, 1.0f, 1.0f)); // Rotacija oko Y ose
+        model3 = glm::translate(model3, glm::vec3(13.0f, 0.0f, 0.0f));
+        model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, 1.0f, 1.0f));
         model3 = glm::scale(model3, glm::vec3(1.5f));
         blendShader.setMat4("model", model3);
         astroModel.Draw(ourShader);
-
 
 
 
@@ -553,7 +583,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-        shaderBloom.setInt("bloom", bloom);
+        shaderBloom.setInt("hdr", hdr);
         shaderBloom.setFloat("exposure", exposure);
         renderQuad();
 
@@ -639,8 +669,8 @@ void DrawImGui(ProgramState *programState) {
         ImGui::Text("Hello text");
         ImGui::SliderFloat("Float slider", &f, 0.0, 1.0);
         ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
-        ImGui::DragFloat3("Backpack position", (float*)&programState->backpackPosition);
-        ImGui::DragFloat("Backpack scale", &programState->backpackScale, 0.05, 0.1, 4.0);
+        ImGui::DragFloat3("object position", (float*)&programState->objectPosition);
+        ImGui::DragFloat("object scale", &programState->objectScale, 0.05, 0.1, 4.0);
 
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
@@ -672,9 +702,9 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         }
     }
-    if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){
+    if(glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS){
 
-        bloom= !bloom;
+        hdr= !hdr;
     }
     if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 
@@ -686,18 +716,24 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         if (exposure <=0.9)
             exposure += 0.1;
     }
-    if (key == GLFW_KEY_M && action == GLFW_PRESS)
+    if (key == GLFW_KEY_B && action == GLFW_PRESS)
         blinn = !blinn;
 
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && !flashLightKeyPressed)
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !flashLightKeyPressed)
     {
         flashLight = !flashLight;
         flashLightKeyPressed = true;
+        if(!flashLight)
+            flashLightColor= false;
     }
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE)
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
     {
         flashLightKeyPressed = false;
     }
+
+    if (key == GLFW_KEY_F && action == GLFW_PRESS && flashLight)
+        flashLightColor = !flashLightColor;
+
 }
 unsigned int loadCubemap(vector<std::string> faces)
 {
