@@ -35,6 +35,8 @@ const unsigned int SCR_HEIGHT = 600;
 bool bloom= false;
 float exposure= 1.0f;
 bool blinn = true;
+bool flashLight = false;
+bool flashLightKeyPressed = false;
 
 // camera
 
@@ -340,6 +342,7 @@ int main() {
     shaderBloom.use();
     shaderBloom.setInt("scene", 0);
     shaderBloom.setInt("bloomBlur", 1);
+    
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -368,6 +371,12 @@ int main() {
 
         // don't forget to enable shader before setting uniforms
         ourShader.use();
+        ourShader.setVec3("viewPosition", programState->camera.Position);
+        ourShader.setFloat("material.shininess", 16.0f);
+        ourShader.setInt("blinn", blinn);
+        ourShader.setInt("flashLight", flashLight);
+
+        //pointlightsetup
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
         ourShader.setVec3("pointLight.position", pointLight.position);
         ourShader.setVec3("pointLight.ambient", pointLight.ambient);
@@ -376,9 +385,24 @@ int main() {
         ourShader.setFloat("pointLight.constant", pointLight.constant);
         ourShader.setFloat("pointLight.linear", pointLight.linear);
         ourShader.setFloat("pointLight.quadratic", pointLight.quadratic);
-        ourShader.setVec3("viewPosition", programState->camera.Position);
-        ourShader.setFloat("material.shininess", 32.0f);
 
+        //dirlightsetup
+        ourShader.setVec3("dirLight.direction", programState->dirLightDir);
+        ourShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
+        ourShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
+        ourShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
+
+        //spotlightsetup
+        ourShader.setVec3("spotLight.position", programState->camera.Position);
+        ourShader.setVec3("spotLight.direction",programState-> camera.Front);
+        ourShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+        ourShader.setVec3("spotLight.diffuse", 0.7f, 0.7f, 0.7f);
+        ourShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        ourShader.setFloat("spotLight.constant", 1.0f);
+        ourShader.setFloat("spotLight.linear", 0.05);
+        ourShader.setFloat("spotLight.quadratic", 0.012);
+        ourShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(10.5f)));
+        ourShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(13.0f)));
 
         // view/projection transformations
         glm::mat4 projection = glm::perspective(glm::radians(programState->camera.Zoom),
@@ -386,13 +410,8 @@ int main() {
         glm::mat4 view = programState->camera.GetViewMatrix();
         ourShader.setMat4("projection", projection);
         ourShader.setMat4("view", view);
-        ourShader.setInt("blinn", blinn);
-        ourShader.setVec3("dirLight.direction", programState->dirLightDir);
-        ourShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
-        ourShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
-        ourShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
 
-         //Face culling
+        //Face culling
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
         glFrontFace(GL_CW);
@@ -669,6 +688,16 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     }
     if (key == GLFW_KEY_M && action == GLFW_PRESS)
         blinn = !blinn;
+
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS && !flashLightKeyPressed)
+    {
+        flashLight = !flashLight;
+        flashLightKeyPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_RELEASE)
+    {
+        flashLightKeyPressed = false;
+    }
 }
 unsigned int loadCubemap(vector<std::string> faces)
 {
