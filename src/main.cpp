@@ -38,6 +38,9 @@ bool blinn = false;
 bool flashLight = false;
 bool flashLightKeyPressed = false;
 bool flashLightColor=false;
+bool blue = false;
+bool sunLight=false;
+
 // camera
 
 float lastX = SCR_WIDTH / 2.0f;
@@ -68,7 +71,7 @@ struct ProgramState {
     float objectScale = 1.0f;
     PointLight pointLight;
     ProgramState()
-            : camera(glm::vec3(0.0f, 0.0f, -1.0f)) {}
+            : camera(glm::vec3(0.0f, 0.0f, 2.5f)) {}
     glm::vec3 dirLightDir = glm::vec3(3.8f, 5.4f, -2.2f);
     glm::vec3 dirLightAmbDiffSpec = glm::vec3(0.3f, 0.3f,0.3f);
 
@@ -174,8 +177,9 @@ int main() {
     Shader ourShader("resources/shaders/2.model_lighting.vs", "resources/shaders/2.model_lighting.fs");
     Shader skyboxShader("resources/shaders/skybox.vs", "resources/shaders/skybox.fs");
     Shader blendShader("resources/shaders/2.model_lighting.vs", "resources/shaders/blending.fs");
-    Shader shaderBlur("resources/shaders/blur.vs", "resources/shaders/blur.fs");
-    Shader shaderBloom("resources/shaders/bloom.vs", "resources/shaders/bloom.fs");
+    Shader bloomShader("resources/shaders/blur.vs", "resources/shaders/blur.fs");
+    Shader hdrShader("resources/shaders/bloom.vs", "resources/shaders/bloom.fs");
+    Shader lightShader("resources/shaders/light.vs", "resources/shaders/light.fs");
 
     // load models
     // -----------
@@ -196,6 +200,8 @@ int main() {
     Model rocketModel("resources/objects/rocket/rocket.obj");
     rocketModel.SetShaderTextureNamePrefix("material.");
 
+    Model ballModel("resources/objects/ball/13913_Sun_v2_l3.obj");
+    ballModel.SetShaderTextureNamePrefix("material.");
 
 
     unsigned int hdrFBO;
@@ -341,12 +347,15 @@ int main() {
     ourShader.setInt("diffuseTexture", 0);
     blendShader.use();
     blendShader.setInt("diffuseTexture", 0);
-    shaderBlur.use();
-    shaderBlur.setInt("image", 0);
-    shaderBloom.use();
-    shaderBloom.setInt("scene", 0);
-    shaderBloom.setInt("bloomBlur", 1);
-    
+    bloomShader.use();
+    bloomShader.setInt("image", 0);
+    hdrShader.use();
+    hdrShader.setInt("scene", 0);
+    hdrShader.setInt("bloomBlur", 1);
+    lightShader.use();
+    lightShader.setInt("diffuseTexture", 0);
+
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -380,6 +389,7 @@ int main() {
         ourShader.setInt("blinn", blinn);
         ourShader.setInt("flashLight", flashLight);
         ourShader.setInt("flashLightColor", flashLightColor);
+        ourShader.setInt("blue", blue);
 
         //pointlightsetup
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
@@ -424,15 +434,13 @@ int main() {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-
-
         // render the loaded model
         //draw meteor
 
         glm::mat4 model;
 
         model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(0.0f,-20.0f,0.0f));
+        model = glm::translate(model,glm::vec3(7.0f,-20.0f,0.0f));
         model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(1,10,0));
         model = glm::translate(model,glm::vec3(4.75f,(-0.93f+ sin(glfwGetTime())/6),-8.5f));
         model = glm::scale(model, glm::vec3 (0.3f));
@@ -442,14 +450,12 @@ int main() {
 
         //draw 2nd
         model = glm::mat4(1.0f);
-        model = glm::rotate( model, (float)glfwGetTime()/4, glm::vec3(1,0,-2));
-        model = glm::translate(model,glm::vec3(-20.5f,(-0.82f+ sin(glfwGetTime())/6),11.0f));
-        model = glm::scale(model, glm::vec3(0.6f,0.4f,0.5f));
+        model = glm::translate(model,glm::vec3(0.0f,-10.0f,0.0f));
+        model = glm::translate(model, glm::vec3(8.0f, sin(glfwGetTime()), 30.0f));
+        model = glm::scale(model, glm::vec3(0.4f));
 
         ourShader.setMat4("model", model);
         meteorModel.Draw(ourShader);
-
-
 
         //draw 3rd
         model = glm::mat4(1.0f);
@@ -460,18 +466,14 @@ int main() {
         ourShader.setMat4("model", model);
         meteorModel.Draw(ourShader);
 
-
-
         //draw moon
         glm::mat4 model2 = glm::mat4(1.0f);
         model2 = glm::translate(model2,glm::vec3(25.75f,-1.4f, -4.65f));
-        model2 = glm::scale(model2, glm::vec3(1.0f));
+        model2 = glm::scale(model2, glm::vec3(0.8f));
         model2 = glm::rotate(model2, glm::radians((float) -90.0), glm::vec3(1.0f, 0.0f, 0.0f));
         model2 = glm::rotate(model2, glm::radians((float) 110.0), glm::vec3(0.0f, 0.0f, 1.0f));
         ourShader.setMat4("model", model2);
         moonModel.Draw(ourShader);
-
-
 
         //draw spacecraft
         glm::mat4 model4 = glm::mat4(1.0f);
@@ -484,23 +486,21 @@ int main() {
         ourShader.setMat4("model", model4);
         craftModel.Draw(ourShader);
 
-        float rocketSpeed = 2.0f;   // Speed of movement
+        float rocketSpeed = 1.0f;   // Speed of movement
 
         // Update the rocket's position
         float currentTime = glfwGetTime();
         float rocketHeight = (currentTime) * rocketSpeed;
 
         glm::mat4 model5 = glm::mat4(1.0f);
+        model5=glm::rotate(model5,glm::radians(-25.0f),glm::vec3(0.0f,0.0f,1.0f));
         model5=glm::translate(model5,glm::vec3(0.0f,-45.0f,0.0f));
         model5= glm::translate(model5, glm::vec3(0.0f, rocketHeight, 0.0f));
-        model5 = glm::scale(model5, glm::vec3(1.0f));
+        model5 = glm::scale(model5, glm::vec3(0.8f));
         ourShader.setMat4("model", model5);
         rocketModel.Draw(ourShader);
 
         glm::vec3 rocketPosition = glm::vec3(model5[3]); //dont need it now
-
-
-
 
         glm::vec3 moonModelPosition = glm::vec3(model2[3]);
         glm::vec3 cameraPosition = programState->camera.Position;
@@ -509,8 +509,55 @@ int main() {
 
         ourShader.setVec3("spotLight.position", moonModelPosition+glm::vec3(-4.0f,5.0f,5.0f));
         ourShader.setVec3("spotLight.direction", direction);
-        //i want to put something transparently into space
 
+        //draw lightball
+        glm::mat4 model6 = glm::mat4(1.0f);
+        model6 = glm::translate(model6,glm::vec3(-8.5f,14.0,28.0f));
+        model6 = glm::scale(model6, glm::vec3(0.02f));
+        lightShader.use();
+        lightShader.setMat4("projection", projection);
+        lightShader.setMat4("view", view);
+        lightShader.setVec3("viewPosition", programState->camera.Position);
+        lightShader.setFloat("material.shininess", 64.0f);
+        lightShader.setInt("blinn", blinn);
+
+        //pointlightsetup
+        pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
+        lightShader.setVec3("pointLight.position", pointLight.position);
+        lightShader.setVec3("pointLight.ambient", pointLight.ambient);
+        lightShader.setVec3("pointLight.diffuse", pointLight.diffuse);
+        lightShader.setVec3("pointLight.specular", pointLight.specular);
+        lightShader.setFloat("pointLight.constant", pointLight.constant);
+        lightShader.setFloat("pointLight.linear", pointLight.linear);
+        lightShader.setFloat("pointLight.quadratic", pointLight.quadratic);
+
+        //dirlightsetup
+        lightShader.setVec3("dirLight.direction", programState->dirLightDir);
+        lightShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
+        lightShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
+        lightShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
+
+        //spotlightsetup
+        lightShader.setVec3("spotLight.ambient", 1.0f,1.0f, 1.0f);
+        lightShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+        lightShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
+        lightShader.setFloat("spotLight.constant", 1.0f);
+        lightShader.setFloat("spotLight.linear", 0.09f);
+        lightShader.setFloat("spotLight.quadratic", 0.032f);
+        lightShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(150.5f)));
+        lightShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(150.0f)));
+
+        glm::vec3 ballModelPosition = glm::vec3(model6[3]);
+        direction = ballModelPosition - cameraPosition;
+        direction = glm::normalize(direction);
+
+        lightShader.setVec3("spotLight.position", ballModelPosition);
+        lightShader.setVec3("spotLight.direction", direction);
+
+        lightShader.setMat4("model", model6);
+        ballModel.Draw(lightShader);
+
+        //i want to put something transparently into space
 
         blendShader.use();
         pointLight.position = glm::vec3(4.0 * cos(currentFrame), 4.0f, 4.0 * sin(currentFrame));
@@ -563,11 +610,11 @@ int main() {
         glDepthFunc(GL_LESS); // set depth function back to default
         bool horizontal = true, first_iteration = true;
         unsigned int amount = 5;
-        shaderBlur.use();
+        bloomShader.use();
         for (unsigned int i = 0; i < amount; i++)
         {
             glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-            shaderBlur.setInt("horizontal", horizontal);
+            bloomShader.setInt("horizontal", horizontal);
             glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
             renderQuad();
             horizontal = !horizontal;
@@ -578,13 +625,13 @@ int main() {
         // now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
         //____________________________________________________________________________________________________
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shaderBloom.use();
+        hdrShader.use();
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-        shaderBloom.setInt("hdr", hdr);
-        shaderBloom.setFloat("exposure", exposure);
+        hdrShader.setInt("hdr", hdr);
+        hdrShader.setFloat("exposure", exposure);
         renderQuad();
 
         if(programState->ImGuiEnabled)
@@ -719,12 +766,15 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_B && action == GLFW_PRESS)
         blinn = !blinn;
 
-    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS && !flashLightKeyPressed)
+    if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
         flashLight = !flashLight;
         flashLightKeyPressed = true;
         if(!flashLight)
             flashLightColor= false;
+        if(!flashLight)
+            blue= false;
+
     }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_RELEASE)
     {
@@ -733,6 +783,20 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
     if (key == GLFW_KEY_F && action == GLFW_PRESS && flashLight)
         flashLightColor = !flashLightColor;
+
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && flashLight)
+    {
+        blue=!blue;
+    }
+
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+        blue = false;
+    }
+
+    if (key == GLFW_KEY_N && action == GLFW_PRESS)
+        sunLight=!sunLight;
+
 
 }
 unsigned int loadCubemap(vector<std::string> faces)

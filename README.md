@@ -16,7 +16,8 @@ Projekat iz Racunarske grafike
 - ```H``` hdr
 - ```B``` blinn
 - ```L``` spotlight 
-- ```F``` menjanje boje spotlighta (dok je on)
+- ```F``` spotlight u drugoj boji (dok je on)
+- ```space``` treperenje spotlighta u drugoj boji (dok je on)
 - ```esc``` izlaz
 # Oblasti grupe A:
 -Cubemaps
