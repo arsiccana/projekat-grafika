@@ -199,13 +199,13 @@ vec3 CalcSpotLight3(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
      // spotlight intensity
      float theta = dot(lightDir, normalize(-light.direction));
      float epsilon = light.cutOff - light.outerCutOff;
-     float intensity = pow(max(dot(lightDir, normalize(-light.direction)), 0.0), 7.0);
-     vec3 ambient = light.ambient * vec3(texture(material.texture_diffuse1, TexCoords));
-     vec3 diffuse = light.diffuse * diff * vec3(texture(material.texture_diffuse1, TexCoords));
+     float intensity = pow(max(dot(lightDir, normalize(-light.direction)), 0.0), 7.0)*2.5;
+     vec3 ambient = light.ambient * 1.5*vec3(texture(material.texture_diffuse1, TexCoords));
+     vec3 diffuse = light.diffuse * 1.5*diff * vec3(texture(material.texture_diffuse1, TexCoords));
      diffuse*=vec3(1.0,2.0,6.0);
      // specular linear combination
      vec3 specularVar1 = vec3(texture(material.texture_specular1, TexCoords));
-     vec3 specular = light.specular * spec * specularVar1;
+     vec3 specular = light.specular * 1.5*spec * specularVar1;
      ambient *= attenuation * intensity;
      diffuse *= attenuation * intensity;
      specular *= attenuation * intensity;

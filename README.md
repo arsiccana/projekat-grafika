@@ -14,7 +14,8 @@ Projekat iz Racunarske grafike
 - ```up``` exposure++
 - ```down``` exposure--
 - ```H``` hdr
-- ```B``` blinn
+- ```B``` bloom
+- ```P``` blinn
 - ```L``` spotlight 
 - ```F``` spotlight u drugoj boji (dok je on)
 - ```space``` treperenje spotlighta u drugoj boji (dok je on)
@@ -23,4 +24,7 @@ Projekat iz Racunarske grafike
 -Cubemaps
 # Oblasti grupe B:
 -HDR,Bloom
+# Student
+Ana Arsic 99/2021
+
 

@@ -30,8 +30,8 @@ unsigned int loadCubemap(vector<std::string> faces);
 
 void renderQuad();
 // settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+const unsigned int SCR_WIDTH = 900;
+const unsigned int SCR_HEIGHT = 700;
 bool hdr= false;
 float exposure= 1.0f;
 bool blinn = false;
@@ -39,8 +39,7 @@ bool flashLight = false;
 bool flashLightKeyPressed = false;
 bool flashLightColor=false;
 bool blue = false;
-bool sunLight=false;
-
+bool bloom=false;
 // camera
 
 float lastX = SCR_WIDTH / 2.0f;
@@ -221,6 +220,7 @@ int main() {
         // attach texture to framebuffer
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
     }
+
     // create and attach depth buffer (renderbuffer)
     unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
@@ -326,12 +326,11 @@ int main() {
                     FileSystem::getPath("resources/textures/skybox/front-min.png"),
                     FileSystem::getPath("resources/textures/skybox/back-min.png")
             };
-    stbi_set_flip_vertically_on_load(false);
+    //stbi_set_flip_vertically_on_load(false);
     unsigned int cubemapTexture = loadCubemap(faces);
 
 
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+
 //lights setup
     PointLight& pointLight = programState->pointLight;
     pointLight.position = glm::vec3(4.0f, 4.0, 0.0);
@@ -343,6 +342,10 @@ int main() {
     pointLight.linear = 0.7f;
     pointLight.quadratic = 0.7f;
 
+
+    //shaders setup
+    skyboxShader.use();
+    skyboxShader.setInt("skybox", 0);
     ourShader.use();
     ourShader.setInt("diffuseTexture", 0);
     blendShader.use();
@@ -438,11 +441,10 @@ int main() {
         //draw meteor
 
         glm::mat4 model;
-
         model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(7.0f,-20.0f,0.0f));
+        model = glm::translate(model,glm::vec3(7.0f,-25.0f,0.0f));
         model = glm::rotate( model, (float)glfwGetTime()/2, glm::vec3(1,10,0));
-        model = glm::translate(model,glm::vec3(4.75f,(-0.93f+ sin(glfwGetTime())/6),-8.5f));
+        model = glm::translate(model,glm::vec3((-0.93f+ sin(glfwGetTime())/6),cos(glfwGetTime() * 1.2f) * 4.0f,-8.5f));
         model = glm::scale(model, glm::vec3 (0.3f));
         ourShader.setMat4("model", model);
         meteorModel.Draw(ourShader);
@@ -450,26 +452,17 @@ int main() {
 
         //draw 2nd
         model = glm::mat4(1.0f);
-        model = glm::translate(model,glm::vec3(0.0f,-10.0f,0.0f));
-        model = glm::translate(model, glm::vec3(8.0f, sin(glfwGetTime()), 30.0f));
+        model = glm::translate(model,glm::vec3(0.0f,-20.0f,0.0f));
+        model = glm::translate(model, glm::vec3(0.0f, cos(glfwGetTime())/6*15.0f, 30.0f));
         model = glm::scale(model, glm::vec3(0.4f));
-
         ourShader.setMat4("model", model);
         meteorModel.Draw(ourShader);
 
-        //draw 3rd
-        model = glm::mat4(1.0f);
-        model = glm::rotate( model, (float)glfwGetTime()/6, glm::vec3(5,-1,-2));
-        model = glm::translate(model,glm::vec3(40.5f,-7.0,-5.0f));
-        model = glm::scale(model, glm::vec3(0.3));
-
-        ourShader.setMat4("model", model);
-        meteorModel.Draw(ourShader);
 
         //draw moon
         glm::mat4 model2 = glm::mat4(1.0f);
         model2 = glm::translate(model2,glm::vec3(25.75f,-1.4f, -4.65f));
-        model2 = glm::scale(model2, glm::vec3(0.8f));
+        model2 = glm::scale(model2, glm::vec3(0.6f));
         model2 = glm::rotate(model2, glm::radians((float) -90.0), glm::vec3(1.0f, 0.0f, 0.0f));
         model2 = glm::rotate(model2, glm::radians((float) 110.0), glm::vec3(0.0f, 0.0f, 1.0f));
         ourShader.setMat4("model", model2);
@@ -485,6 +478,7 @@ int main() {
 
         ourShader.setMat4("model", model4);
         craftModel.Draw(ourShader);
+        glm::vec3 craftPosition = glm::vec3(model4[3]);
 
         float rocketSpeed = 1.0f;   // Speed of movement
 
@@ -507,13 +501,13 @@ int main() {
         glm::vec3 direction = moonModelPosition - cameraPosition;
         direction = glm::normalize(direction);
 
-        ourShader.setVec3("spotLight.position", moonModelPosition+glm::vec3(-4.0f,5.0f,5.0f));
+        ourShader.setVec3("spotLight.position", moonModelPosition+glm::vec3(-2.5f,2.0f,2.0f));
         ourShader.setVec3("spotLight.direction", direction);
 
         //draw lightball
         glm::mat4 model6 = glm::mat4(1.0f);
-        model6 = glm::translate(model6,glm::vec3(-8.5f,14.0,28.0f));
-        model6 = glm::scale(model6, glm::vec3(0.02f));
+        model6 = glm::translate(model6,glm::vec3(-11.5f,14.0,32.0f));
+        model6 = glm::scale(model6, glm::vec3(0.03f));
         lightShader.use();
         lightShader.setMat4("projection", projection);
         lightShader.setMat4("view", view);
@@ -532,27 +526,15 @@ int main() {
         lightShader.setFloat("pointLight.quadratic", pointLight.quadratic);
 
         //dirlightsetup
-        lightShader.setVec3("dirLight.direction", programState->dirLightDir);
         lightShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
         lightShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
         lightShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
-
-        //spotlightsetup
-        lightShader.setVec3("spotLight.ambient", 1.0f,1.0f, 1.0f);
-        lightShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-        lightShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
-        lightShader.setFloat("spotLight.constant", 1.0f);
-        lightShader.setFloat("spotLight.linear", 0.09f);
-        lightShader.setFloat("spotLight.quadratic", 0.032f);
-        lightShader.setFloat("spotLight.cutOff", glm::cos(glm::radians(150.5f)));
-        lightShader.setFloat("spotLight.outerCutOff", glm::cos(glm::radians(150.0f)));
 
         glm::vec3 ballModelPosition = glm::vec3(model6[3]);
         direction = ballModelPosition - cameraPosition;
         direction = glm::normalize(direction);
 
-        lightShader.setVec3("spotLight.position", ballModelPosition);
-        lightShader.setVec3("spotLight.direction", direction);
+        lightShader.setVec3("dirLight.direction",direction );
 
         lightShader.setMat4("model", model6);
         ballModel.Draw(lightShader);
@@ -587,12 +569,8 @@ int main() {
         model3 = glm::rotate(model3, glm::radians(angle), glm::vec3(1.0f, 1.0f, 1.0f));
         model3 = glm::scale(model3, glm::vec3(1.5f));
         blendShader.setMat4("model", model3);
-        astroModel.Draw(ourShader);
+        astroModel.Draw(blendShader);
 
-
-
-//        if (programState->ImGuiEnabled)
-      //      DrawImGui(programState);
 
         //draw skybox
         glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
@@ -630,7 +608,8 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-        hdrShader.setInt("hdr", hdr);
+        hdrShader.setBool("hdr", hdr);
+        hdrShader.setBool("bloom", bloom);
         hdrShader.setFloat("exposure", exposure);
         renderQuad();
 
@@ -705,23 +684,24 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
 }
 
 void DrawImGui(ProgramState *programState) {
-    ImGui_ImplOpenGL3_NewFrame();
+   /* ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-/*
+
     {
         static float f = 0.0f;
-        ImGui::Begin("Hello window");
-        ImGui::Text("Hello text");
+        ImGui::Begin("Universe");
+        ImGui::Text("Universe");
         ImGui::SliderFloat("Float slider", &f, 0.0, 1.0);
         ImGui::ColorEdit3("Background color", (float *) &programState->clearColor);
-        ImGui::DragFloat3("object position", (float*)&programState->objectPosition);
+      /*  ImGui::DragFloat3("object position", (float*)&programState->objectPosition);
         ImGui::DragFloat("object scale", &programState->objectScale, 0.05, 0.1, 4.0);
 
         ImGui::DragFloat("pointLight.constant", &programState->pointLight.constant, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.linear", &programState->pointLight.linear, 0.05, 0.0, 1.0);
         ImGui::DragFloat("pointLight.quadratic", &programState->pointLight.quadratic, 0.05, 0.0, 1.0);
+
         ImGui::End();
     }
 
@@ -734,9 +714,10 @@ void DrawImGui(ProgramState *programState) {
         ImGui::Checkbox("Camera mouse update", &programState->CameraMouseMovementUpdateEnabled);
         ImGui::End();
     }
-*/
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    */
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -753,6 +734,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
         hdr= !hdr;
     }
+
+    if(glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){
+
+        bloom= !bloom;
+    }
+
     if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS){
 
         if(exposure >= 0.5)
@@ -763,9 +750,11 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         if (exposure <=0.9)
             exposure += 0.1;
     }
-    if (key == GLFW_KEY_B && action == GLFW_PRESS)
-        blinn = !blinn;
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS) {
 
+           blinn = !blinn;
+
+    }
     if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
     {
         flashLight = !flashLight;
@@ -794,8 +783,6 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         blue = false;
     }
 
-    if (key == GLFW_KEY_N && action == GLFW_PRESS)
-        sunLight=!sunLight;
 
 
 }
