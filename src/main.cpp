@@ -30,8 +30,8 @@ unsigned int loadCubemap(vector<std::string> faces);
 
 void renderQuad();
 // settings
-const unsigned int SCR_WIDTH = 900;
-const unsigned int SCR_HEIGHT = 700;
+const unsigned int SCR_WIDTH = 1200;
+const unsigned int SCR_HEIGHT = 920;
 bool hdr= false;
 float exposure= 1.0f;
 bool blinn = false;
@@ -127,7 +127,7 @@ int main() {
 
     // glfw window creation
     // --------------------
-    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "Univerzum", NULL, NULL);
     if (window == NULL) {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -560,6 +560,7 @@ int main() {
         blendShader.setVec3("dirLight.ambient", glm::vec3(programState->dirLightAmbDiffSpec.x));
         blendShader.setVec3("dirLight.diffuse", glm::vec3(programState->dirLightAmbDiffSpec.y));
         blendShader.setVec3("dirLight.specular", glm::vec3(programState->dirLightAmbDiffSpec.z));
+        blendShader.setBool("blinn",blinn);
         //draw astronaut
 
         glm::mat4 model3 = glm::mat4(1.0f);

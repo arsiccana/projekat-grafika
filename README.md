@@ -1,5 +1,5 @@
 # Projekat
-Projekat iz Racunarske grafike
+Projekat iz Računarske grafike
 # Uputstvo
 1. `git clone git@github.com:arsiccana/projekat-grafika.git`
 2. CLion -> Open -> path_to_project
@@ -28,10 +28,12 @@ Projekat iz Racunarske grafike
 - ```space``` treperenje spotlighta u drugoj boji (dok je on)
 - ```esc``` izlaz
 # Oblasti grupe A:
--Cubemaps
+- Cubemaps
 # Oblasti grupe B:
--HDR,Bloom
+- HDR,Bloom
+# Demo projekta
+[Video snimak](https://www.youtube.com/watch?v=VKWN2Ati6Ro)
 # Student
-Ana Arsic 99/2021
+Ana Arsić 99/2021
 
 
