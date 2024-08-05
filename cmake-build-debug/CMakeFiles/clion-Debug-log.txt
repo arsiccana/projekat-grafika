@@ -1,4 +1,4 @@
-/opt/clion-2023.3.4/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/clion-2023.3.4/bin/ninja/linux/x64/ninja -G Ninja -S /home/ana/Desktop/grafika/projekat-grafika/projekat-grafika -B /home/ana/Desktop/grafika/projekat-grafika/projekat-grafika/cmake-build-debug
+"/media/ana/Local disck D/clion-2024.1.4/bin/cmake/linux/x64/bin/cmake" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=/media/ana/Local disck D/clion-2024.1.4/bin/ninja/linux/x64/ninja" -G Ninja -S /home/ana/Desktop/grafika/projekat-grafika/projekat-grafika -B /home/ana/Desktop/grafika/projekat-grafika/projekat-grafika/cmake-build-debug
 -- The C compiler identification is GNU 11.4.0
 -- The CXX compiler identification is GNU 11.4.0
 -- Detecting C compiler ABI info
@@ -14,6 +14,6 @@
 -- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so   
 -- Found GLFW3: /usr/lib/x86_64-linux-gnu/libglfw.so  
 -- Found ASSIMP: /usr/lib/x86_64-linux-gnu/libassimp.so
--- Configuring done (0.3s)
+-- Configuring done (1.1s)
 -- Generating done (0.0s)
 -- Build files have been written to: /home/ana/Desktop/grafika/projekat-grafika/projekat-grafika/cmake-build-debug
