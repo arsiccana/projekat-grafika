@@ -30,7 +30,7 @@ Projekat iz Računarske grafike
 # Oblasti grupe A:
 - Cubemaps
 # Oblasti grupe B:
-- HDR,Bloom
+- HDR,Bloom,Parallax Mapping
 # Demo projekta
 [Video snimak](https://www.youtube.com/watch?v=VKWN2Ati6Ro)
 # Student
