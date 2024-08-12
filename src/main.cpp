@@ -380,6 +380,10 @@ int main() {
     mappingShader.setInt("normalMap", 1);
     mappingShader.setInt("depthMap", 2);
 
+    mappingShader.setInt("diffuseMap", 4);
+    mappingShader.setInt("normalMap", 5);
+    mappingShader.setInt("depthMap", 6);
+
     // draw in wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -485,7 +489,7 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, normalMap);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, heightMap);
-        renderFloor();
+       // renderFloor();
 
         /*ourShader.setMat4("model", model);
         meteorModel.Draw(ourShader);
@@ -497,9 +501,16 @@ int main() {
         model = glm::translate(model, glm::vec3(0.0f, cos(glfwGetTime())/6*15.0f, 30.0f));
         model = glm::scale(model, glm::vec3(0.4f));
         mappingShader.setMat4("model", model);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, heightMap);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, normalMap);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap);
+        glDisable(GL_CULL_FACE);
         meteorModel.Draw(mappingShader);
 
-
+        glEnable(GL_CULL_FACE);
         ourShader.use();
         //draw moon
         glm::mat4 model2 = glm::mat4(1.0f);
